@@ -1,0 +1,20 @@
+version = 0.1
+
+[prod.global.parameters]
+region = "ap-northeast-2"
+
+[prod.build.parameters]
+use_container = true
+parallel = true
+cached = true
+
+[prod.deploy.parameters]
+stack_name = "tasu-predict-model-prod"
+region = "ap-northeast-2"
+profile = "prod"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "tasu-predict-model-prod"
+image_repositories = ["TasuPredictTrainFunction=<account-id>.dkr.ecr.ap-northeast-2.amazonaws.com/tasu-predict-model"]
+parameter_overrides = "AccountEnv=\"prod\" VpcSecurityGroupId=\"/sample/vpc/security-group-id\" PrivateSubnetId1=\"/sample/vpc/private-subnet-1\" PrivateSubnetId2=\"/sample/vpc/private-subnet-2\" ModelS3Bucket=\"<model-artifact-bucket>\" ModelS3Prefix=\"tasu-predict\""

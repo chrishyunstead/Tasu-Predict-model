@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  Tasu Prediction Model Training Lambda - portfolio sanitized version
+
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 6144
+    Tracing: Active
+
+Parameters:
+  AccountEnv:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - beta
+      - prod
+
+  VpcSecurityGroupId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>
+    Default: /sample/vpc/security-group-id
+
+  PrivateSubnetId1:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Subnet::Id>
+    Default: /sample/vpc/private-subnet-1
+
+  PrivateSubnetId2:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Subnet::Id>
+    Default: /sample/vpc/private-subnet-2
+
+  ModelS3Bucket:
+    Type: String
+    Default: sample-model-artifact-bucket
+
+  ModelS3Prefix:
+    Type: String
+    Default: tasu-predict
+
+Resources:
+  TasuPredictTrainFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      DockerTag: tasu-predict-train-v1.0
+      DockerContext: ./
+      Dockerfile: Dockerfile
+    Properties:
+      PackageType: Image
+      FunctionName: !Sub "${AWS::StackName}-lambda"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - AmazonSSMReadOnlyAccess
+        - S3CrudPolicy:
+            BucketName: !Ref ModelS3Bucket
+      Environment:
+        Variables:
+          ACCOUNT_ENV: !Ref AccountEnv
+          MODEL_S3_BUCKET: !Ref ModelS3Bucket
+          MODEL_S3_PREFIX: !Ref ModelS3Prefix
+          TZ: Asia/Seoul
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref VpcSecurityGroupId
+        SubnetIds:
+          - !Ref PrivateSubnetId1
+          - !Ref PrivateSubnetId2
+      Events:
+        DailyTrainSchedule:
+          Type: Schedule
+          Properties:
+            Name: !Sub "${AWS::StackName}-daily-train"
+            Description: "Train tasu prediction model every day at 12:00 KST"
+            Schedule: cron(0 3 * * ? *)
+            Enabled: true
+
+Outputs:
+  TasuPredictTrainFunctionArn:
+    Description: "Lambda ARN for tasu model training"
+    Value: !GetAtt TasuPredictTrainFunction.Arn
+
+  TasuPredictTrainFunctionName:
+    Description: "Lambda name for tasu model training"
+    Value: !Ref TasuPredictTrainFunction

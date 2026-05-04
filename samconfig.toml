@@ -1,0 +1,39 @@
+version = 0.1
+
+[beta.global.parameters]
+region = "ap-northeast-2"
+
+[beta.build.parameters]
+use_container = true
+parallel = true
+cached = true
+
+[beta.deploy.parameters]
+stack_name = "tasu-predict-model-beta"
+region = "ap-northeast-2"
+profile = "beta"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+resolve_image_repos = true
+parameter_overrides = "AccountEnv=\"beta\" PushOpsSG=\"/PushOps/SG\" PushOpsPrivateSubnet3=\"/PushOps/PrivateSubnet3\" PushOpsPrivateSubnet4=\"/PushOps/PrivateSubnet4\" ModelS3Bucket=\"beta-daas-ml-data-auto-clustering-ap-northeast-2-391081828857\" ModelS3Prefix=\"tasu-predict\""
+
+[prod.global.parameters]
+region = "ap-northeast-2"
+stack_name = "tasu-predict-model-prod"
+
+[prod.build.parameters]
+use_container = true
+parallel = true
+cached = true
+
+[prod.deploy.parameters]
+stack_name = "tasu-predict-model-prod"
+region = "ap-northeast-2"
+profile = "prod"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "tasu-predict-model-prod"
+image_repositories = ["TasuPredictTrainFunction=910312087826.dkr.ecr.ap-northeast-2.amazonaws.com/tasu-predict-model"]
+parameter_overrides = "AccountEnv=\"prod\" PushOpsSG=\"/PushOps/SG\" PushOpsPrivateSubnet3=\"/PushOps/PrivateSubnet3\" PushOpsPrivateSubnet4=\"/PushOps/PrivateSubnet4\" ModelS3Bucket=\"prod-daas-ml-data-auto-clustering-ap-northeast-2-910312087826\" ModelS3Prefix=\"tasu-predict\""
