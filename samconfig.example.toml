@@ -1,5 +1,23 @@
 version = 0.1
 
+[beta.global.parameters]
+region = "ap-northeast-2"
+
+[beta.build.parameters]
+use_container = true
+parallel = true
+cached = true
+
+[beta.deploy.parameters]
+stack_name = "tasu-predict-model-beta"
+region = "ap-northeast-2"
+profile = "<AWS_PROFILE_BETA>"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+resolve_image_repos = true
+parameter_overrides = "AccountEnv=\"beta\" PushOpsSG=\"<SSM_PARAM_LAMBDA_SECURITY_GROUP_ID>\" PushOpsPrivateSubnet3=\"<SSM_PARAM_PRIVATE_SUBNET_A>\" PushOpsPrivateSubnet4=\"<SSM_PARAM_PRIVATE_SUBNET_B>\" ModelS3Bucket=\"<MODEL_S3_BUCKET_BETA>\" ModelS3Prefix=\"tasu-predict\""
+
 [prod.global.parameters]
 region = "ap-northeast-2"
 
@@ -11,10 +29,12 @@ cached = true
 [prod.deploy.parameters]
 stack_name = "tasu-predict-model-prod"
 region = "ap-northeast-2"
-profile = "prod"
+profile = "<AWS_PROFILE_PROD>"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "tasu-predict-model-prod"
-image_repositories = ["TasuPredictTrainFunction=<account-id>.dkr.ecr.ap-northeast-2.amazonaws.com/tasu-predict-model"]
-parameter_overrides = "AccountEnv=\"prod\" VpcSecurityGroupId=\"/sample/vpc/security-group-id\" PrivateSubnetId1=\"/sample/vpc/private-subnet-1\" PrivateSubnetId2=\"/sample/vpc/private-subnet-2\" ModelS3Bucket=\"<model-artifact-bucket>\" ModelS3Prefix=\"tasu-predict\""
+image_repositories = [
+  "TasuPredictTrainFunction=<AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/<ECR_REPOSITORY_NAME>"
+]
+parameter_overrides = "AccountEnv=\"prod\" PushOpsSG=\"<SSM_PARAM_LAMBDA_SECURITY_GROUP_ID>\" PushOpsPrivateSubnet3=\"<SSM_PARAM_PRIVATE_SUBNET_A>\" PushOpsPrivateSubnet4=\"<SSM_PARAM_PRIVATE_SUBNET_B>\" ModelS3Bucket=\"<MODEL_S3_BUCKET_PROD>\" ModelS3Prefix=\"tasu-predict\""
